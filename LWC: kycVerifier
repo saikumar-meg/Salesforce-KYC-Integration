@@ -1,0 +1,62 @@
+cat > force-app/main/default/lwc/kycVerifier/kycVerifier.js <<'JS'
+import { LightningElement, track } from 'lwc';
+import runKyc from '@salesforce/apex/KycController.runKyc';
+
+export default class KycVerifier extends LightningElement {
+  @track form = { firstName: '', lastName: '', ssn: '', dob: '' };
+  @track result;
+
+  handleChange(e) {
+    const { name, value } = e.target;
+    this.form = { ...this.form, [name]: value };
+  }
+
+  async handleVerify() {
+    this.result = { status: 'LOADING', reason: 'Contacting KYC service...' };
+    try {
+      const res = await runKyc({ req: this.form });
+      this.result = res;
+    } catch (e) {
+      this.result = { status: 'ERROR', reason: e?.body?.message || e.message };
+    }
+  }
+}
+JS
+
+cat > force-app/main/default/lwc/kycVerifier/kycVerifier.html <<'HTML'
+<template>
+  <lightning-card title="KYC Verifier" icon-name="utility:preview">
+    <div class="slds-p-around_medium slds-grid slds-wrap slds-gutters">
+      <lightning-input class="slds-col slds-size_1-of-2" name="firstName" label="First Name" value={form.firstName} onchange={handleChange}></lightning-input>
+      <lightning-input class="slds-col slds-size_1-of-2" name="lastName" label="Last Name" value={form.lastName} onchange={handleChange}></lightning-input>
+      <lightning-input class="slds-col slds-size_1-of-2" name="ssn" label="SSN (demo)" value={form.ssn} onchange={handleChange}></lightning-input>
+      <lightning-input class="slds-col slds-size_1-of-2" name="dob" type="date" label="Date of Birth" value={form.dob} onchange={handleChange}></lightning-input>
+    </div>
+    <div class="slds-p-horizontal_medium slds-p-bottom_medium">
+      <lightning-button variant="brand" label="Verify KYC" onclick={handleVerify}></lightning-button>
+    </div>
+
+    <template if:true={result}>
+      <div class="slds-p-around_medium">
+        <p><b>Status:</b> {result.status}</p>
+        <template if:true={result.reason}>
+          <p><b>Reason:</b> {result.reason}</p>
+        </template>
+      </div>
+    </template>
+  </lightning-card>
+</template>
+HTML
+
+cat > force-app/main/default/lwc/kycVerifier/kycVerifier.js-meta.xml <<'XML'
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata" fqn="kycVerifier">
+  <apiVersion>60.0</apiVersion>
+  <isExposed>true</isExposed>
+  <targets>
+    <target>lightning__AppPage</target>
+    <target>lightning__RecordPage</target>
+    <target>lightning__HomePage</target>
+  </targets>
+</LightningComponentBundle>
+XML

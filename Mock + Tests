@@ -1,0 +1,67 @@
+cat > force-app/main/default/classes/KycServiceMock.cls <<'APEX'
+@IsTest
+global with sharing class KycServiceMock implements HttpCalloutMock {
+    global HTTPResponse respond(HTTPRequest req) {
+        HttpResponse res = new HttpResponse();
+        res.setHeader('Content-Type', 'application/json');
+        String body;
+        if (req.getBody().contains('"ssn":"9999"')) {
+            body = '{"status":"REJECTED","reason":"Watchlist match"}';
+        } else if (req.getBody().contains('"ssn":"0000"')) {
+            body = '{"status":"REVIEW","reason":"Manual review required"}';
+        } else {
+            body = '{"status":"APPROVED","reason":"Auto-approval"}';
+        }
+        res.setBody(body);
+        res.setStatusCode(200);
+        return res;
+    }
+}
+APEX
+
+cat > force-app/main/default/classes/KycServiceMock.cls-meta.xml <<'XML'
+<?xml version="1.0" encoding="UTF-8"?>
+<ApexClass xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>60.0</apiVersion>
+    <status>Active</status>
+</ApexClass>
+XML
+
+cat > force-app/main/default/classes/KycServiceTest.cls <<'APEX'
+@IsTest
+private class KycServiceTest {
+    @IsTest
+    static void testApproved() {
+        Test.setMock(HttpCalloutMock.class, new KycServiceMock());
+        KycService.KycRequest req = new KycService.KycRequest();
+        req.firstName = 'Ana'; req.lastName = 'Lee'; req.ssn = '1234'; req.dob = '1990-01-01';
+        KycService.KycResponse res = KycService.verify(req);
+        System.assertEquals('APPROVED', res.status);
+    }
+    @IsTest
+    static void testReview() {
+        Test.setMock(HttpCalloutMock.class, new KycServiceMock());
+        KycService.KycRequest req = new KycService.KycRequest();
+        req.firstName = 'Ben'; req.lastName = 'Kim'; req.ssn = '0000'; req.dob = '1988-05-02';
+        KycService.KycResponse res = KycService.verify(req);
+        System.assertEquals('REVIEW', res.status);
+        System.assertEquals(true, String.isNotBlank(res.reason));
+    }
+    @IsTest
+    static void testRejected() {
+        Test.setMock(HttpCalloutMock.class, new KycServiceMock());
+        KycService.KycRequest req = new KycService.KycRequest();
+        req.firstName = 'Eve'; req.lastName = 'Stone'; req.ssn = '9999'; req.dob = '1979-07-11';
+        KycService.KycResponse res = KycService.verify(req);
+        System.assertEquals('REJECTED', res.status);
+    }
+}
+APEX
+
+cat > force-app/main/default/classes/KycServiceTest.cls-meta.xml <<'XML'
+<?xml version="1.0" encoding="UTF-8"?>
+<ApexClass xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>60.0</apiVersion>
+    <status>Active</status>
+</ApexClass>
+XML

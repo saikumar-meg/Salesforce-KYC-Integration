@@ -1,0 +1,9 @@
+cat > .gitignore <<'EOF'
+.sfdx/
+.sf/
+.maxcompute/
+*.log
+*.tmp
+**/node_modules/
+coverage/
+EOF

@@ -1,0 +1,62 @@
+<template>
+  <lightning-card title="KYC Verifier" icon-name="utility:preview">
+    <div class="slds-p-around_medium slds-grid slds-wrap slds-gutters">
+      <lightning-input
+        class="slds-col slds-size_1-of-2"
+        name="firstName"
+        label="First Name"
+        value={form.firstName}
+        onchange={handleChange}
+      ></lightning-input>
+
+      <lightning-input
+        class="slds-col slds-size_1-of-2"
+        name="lastName"
+        label="Last Name"
+        value={form.lastName}
+        onchange={handleChange}
+      ></lightning-input>
+
+      <lightning-input
+        class="slds-col slds-size_1-of-2"
+        name="ssn"
+        label="SSN (Demo)"
+        value={form.ssn}
+        onchange={handleChange}
+      ></lightning-input>
+
+      <lightning-input
+        class="slds-col slds-size_1-of-2"
+        name="dob"
+        type="date"
+        label="Date of Birth"
+        value={form.dob}
+        onchange={handleChange}
+      ></lightning-input>
+    </div>
+
+    <div class="slds-p-horizontal_medium slds-p-bottom_medium">
+      <lightning-button
+        variant="brand"
+        label={loading ? "Verifying..." : "Verify KYC"}
+        onclick={handleVerify}
+        disabled={loading}
+      ></lightning-button>
+    </div>
+
+    <template if:true={result}>
+      <div class="slds-p-around_medium slds-box slds-theme_default">
+        <p><b>Status:</b> {result.status}</p>
+        <template if:true={result.reason}>
+          <p><b>Reason:</b> {result.reason}</p>
+        </template>
+        <template if:true={result.requestId}>
+          <p><b>Request ID:</b> {result.requestId}</p>
+        </template>
+        <template if:true={result.timestamp}>
+          <p><b>Timestamp:</b> {result.timestamp}</p>
+        </template>
+      </div>
+    </template>
+  </lightning-card>
+</template>

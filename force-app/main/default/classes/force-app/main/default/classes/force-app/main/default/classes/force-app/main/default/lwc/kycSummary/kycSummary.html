@@ -1,0 +1,40 @@
+<template>
+  <lightning-card title="KYC Summary" icon-name="utility:chart">
+    <div class="slds-p-around_medium">
+      <lightning-combobox
+        label="Window"
+        value={days}
+        placeholder="Select range"
+        options="[{label:'7 days', value:'7'},{label:'14 days', value:'14'},{label:'30 days', value:'30'}]"
+        onchange={handleDaysChange}
+      ></lightning-combobox>
+    </div>
+
+    <div class="slds-grid slds-gutters slds-p-horizontal_medium slds-p-bottom_medium">
+      <div class="slds-col">
+        <lightning-card title="Total" icon-name="utility:summarydetail">
+          <div class="slds-p-around_medium slds-text-heading_large">{data.total}</div>
+        </lightning-card>
+      </div>
+      <div class="slds-col">
+        <lightning-card title="Approved" icon-name="utility:success">
+          <div class="slds-p-around_medium slds-text-heading_large">{data.approved}</div>
+        </lightning-card>
+      </div>
+      <div class="slds-col">
+        <lightning-card title="Review" icon-name="utility:warning">
+          <div class="slds-p-around_medium slds-text-heading_large">{data.review}</div>
+        </lightning-card>
+      </div>
+      <div class="slds-col">
+        <lightning-card title="Rejected" icon-name="utility:error">
+          <div class="slds-p-around_medium slds-text-heading_large">{data.rejected}</div>
+        </lightning-card>
+      </div>
+    </div>
+
+    <template if:true={loading}>
+      <div class="slds-p-around_medium">Loading…</div>
+    </template>
+  </lightning-card>
+</template>

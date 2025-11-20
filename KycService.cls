@@ -3,8 +3,9 @@ public static KycResponse verify(KycRequest req) {
 
     KycResponse output = new KycResponse();
     Integer attempts = 0;
+    Boolean success = false;
 
-    while (attempts < 2) {
+    while (attempts < 2 && !success) {
         attempts++;
 
         try {
@@ -33,20 +34,17 @@ public static KycResponse verify(KycRequest req) {
                 output.requestId = (String) parsed.get('requestId');
                 output.timestamp = (String) parsed.get('timestamp');
 
-                KycLogService.createLog(req, output);
-                return output;
+                success = true;
             }
         } catch (Exception ex) {
             if (attempts == 2) {
                 output.status = 'ERROR';
-                output.reason = 'API unavailable. Retry failed: ' + ex.getMessage();
-                KycLogService.createLog(req, output);
-                return output;
+                output.reason = 'API unavailable after retry: ' + ex.getMessage();
             }
         }
     }
 
-    output.status = 'ERROR';
-    output.reason = 'Unexpected failure';
+    KycLogService.createLog(req, output, attempts);
+
     return output;
 }

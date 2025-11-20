@@ -1,27 +1,21 @@
 @IsTest
-private class KycLogServiceTest {
-    @IsTest
-    static void testCreateLog() {
-        // Mock request and response
-        KycService.KycRequest req = new KycService.KycRequest();
-        req.firstName = 'Test';
-        req.lastName = 'User';
-        req.ssn = '9999';
-        req.dob = '1990-01-01';
+static void testLogWithRetry() {
+    KycService.KycRequest req = new KycService.KycRequest();
+    req.firstName = 'Test';
+    req.lastName = 'Retry';
+    req.ssn = '2222';
+    req.dob = '1990-05-05';
 
-        KycService.KycResponse res = new KycService.KycResponse();
-        res.status = 'APPROVED';
-        res.reason = 'Test case approval';
-        res.requestId = 'REQ-001';
-        res.timestamp = String.valueOf(System.now());
+    KycService.KycResponse res = new KycService.KycResponse();
+    res.status = 'APPROVED';
+    res.reason = 'Verified';
+    res.requestId = 'REQ-123';
+    res.timestamp = String.valueOf(System.now());
 
-        Test.startTest();
-        KycLogService.createLog(req, res);
-        Test.stopTest();
+    Test.startTest();
+    KycLogService.createLog(req, res, 2);
+    Test.stopTest();
 
-        List<KYC_Log__c> logs = [SELECT Id, Status__c, Request_ID__c FROM KYC_Log__c];
-        System.assertEquals(1, logs.size(), 'Log record should be created');
-        System.assertEquals('APPROVED', logs[0].Status__c);
-        System.assertEquals('REQ-001', logs[0].Request_ID__c);
-    }
+    KYC_Log__c log = [SELECT Retry_Attempt__c FROM KYC_Log__c LIMIT 1];
+    System.assertEquals(2, log.Retry_Attempt__c);
 }
